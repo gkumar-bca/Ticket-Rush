@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+    <title>Payment</title>
+    <style>
+        /* Payment Page Styles */
+.payment-container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    font-family: 'Lato', sans-serif;
+}
+
+.payment-container h2 {
+    font-size: 1.8rem;
+    color: #007bff;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.payment-container p {
+    font-size: 1.1rem;
+    color: #333;
+    margin-bottom: 25px;
+}
+
+.error {
+    color: #dc3545;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Payment Option Styling */
+.payment-option {
+    margin-bottom: 30px;
+}
+
+.payment-option h4 {
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.payment-option h5 {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* Form Group Styling */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    font-size: 0.95rem;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-group input[type="text"]:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+    outline: none;
+}
+
+/* Radio Button Styling */
+.form-group input[type="radio"] {
+    margin-right: 10px;
+    accent-color: #007bff;
+}
+
+.form-group label[for="upi"],
+.form-group label[for="card"] {
+    font-size: 1rem;
+    color: #333;
+    cursor: pointer;
+    margin-right: 20px;
+}
+
+/* Button Styling */
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border: none;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    transform: translateY(-2px);
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+    .payment-container {
+        margin: 20px;
+        padding: 20px;
+    }
+
+    .payment-container h2 {
+        font-size: 1.5rem;
+    }
+
+    .payment-container p {
+        font-size: 1rem;
+    }
+
+    .form-group input[type="text"] {
+        font-size: 0.9rem;
+        padding: 8px;
+    }
+
+    .btn-primary, .btn-secondary {
+        font-size: 0.9rem;
+        padding: 10px;
+    }
+}
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container payment-container">
+    <h2 class="text-center text-primary">Complete Your Payment</h2>
+    <p class="text-center">Booking for {{ seats }} on {{ show_date }} | Total: ₹{{ total }}</p>
+    
+    {% if error %}
+        <p class="error text-center">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="{% url 'payment' %}">
+        {% csrf_token %}
+        <div class="payment-option">
+            <h4>Select Payment Method</h4>
+            <div class="form-group">
+                <input type="radio" name="payment_method" value="upi" id="upi" checked>
+                <label for="upi">UPI</label>
+                <input type="radio" name="payment_method" value="card" id="card">
+                <label for="card">Credit/Debit Card</label>
+            </div>
+        </div>
+
+        <!-- UPI Payment Section -->
+        <div id="upi-section" class="payment-option">
+            <h5>UPI Payment</h5>
+            <div class="form-group">
+                <label for="upi_id">UPI ID</label>
+                <input type="text" name="upi_id" id="upi_id" class="form-control" placeholder="example@upi">
+            </div>
+        </div>
+
+        <!-- Card Payment Section -->
+        <div id="card-section" class="payment-option" style="display: none;">
+            <h5>Card Payment</h5>
+            <div class="form-group">
+                <label for="card_number">Card Number</label>
+                <input type="text" name="card_number" id="card_number" class="form-control" placeholder="1234 5678 9012 3456">
+            </div>
+            <div class="form-group">
+                <label for="card_expiry">Expiry Date</label>
+                <input type="text" name="card_expiry" id="card_expiry" class="form-control" placeholder="MM/YY">
+            </div>
+            <div class="form-group">
+                <label for="card_cvv">CVV</label>
+                <input type="text" name="card_cvv" id="card_cvv" class="form-control" placeholder="123">
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Pay Now</button>
+        <a href="{% url 'show select' %}" class="btn btn-secondary btn-block">Cancel</a>
+    </form>
+</div>
+
+<script>
+    // Toggle between UPI and Card sections
+    document.getElementById('upi').addEventListener('change', function() {
+        document.getElementById('upi-section').style.display = 'block';
+        document.getElementById('card-section').style.display = 'none';
+    });
+    document.getElementById('card').addEventListener('change', function() {
+        document.getElementById('upi-section').style.display = 'none';
+        document.getElementById('card-section').style.display = 'block';
+    });
+</script>
+{% endblock %}
